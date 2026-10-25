@@ -1,5 +1,6 @@
 from src.padic_config import SOURCE_LEVEL, STATUS_LEVEL, TIME_LEVEL
 
+
 def get_padic_path(claim, documents):
     document = documents[claim["document_id"]]
 
