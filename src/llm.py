@@ -1,8 +1,9 @@
 from pathlib import Path
-from ollama import Client
-from src.llm_config import MODEL_NAME, OLLAMA_HOST
-from src.schemas import ModelAnswer
 
+from ollama import Client
+
+from src.llm_config import LLM_OPTIONS, MODEL_NAME, OLLAMA_HOST
+from src.schemas import ModelAnswer
 
 PROMPT_PATH = Path("prompts/system_prompt.txt")
 
@@ -12,7 +13,10 @@ def load_system_prompt():
 
 
 def create_client(api_key):
-    return Client(host=OLLAMA_HOST, headers={"Authorization": "Bearer " + api_key})
+    return Client(
+        host=OLLAMA_HOST,
+        headers={"Authorization": "Bearer " + api_key},
+    )
 
 
 def ask_llm(client, question_id, question, context):
@@ -33,16 +37,21 @@ def ask_llm(client, question_id, question, context):
                 "content": prompt,
             }
         ],
-        format=ModelAnswer.model_json_schema()
+        format=ModelAnswer.model_json_schema(),
+        options=LLM_OPTIONS,
     )
 
-    return ModelAnswer.model_validate_json(response.message.content)
+    answer = ModelAnswer.model_validate_json(response.message.content)
+
+    token_count = (response.prompt_eval_count or 0) + (response.eval_count or 0)
+
+    return answer, token_count
 
 
 def validate_answer(answer, allowed_ids):
     errors = []
 
-    used_ids = (answer.evidence_ids + answer.counterevidence_ids)
+    used_ids = answer.evidence_ids + answer.counterevidence_ids
 
     for claim_id in used_ids:
         if claim_id not in allowed_ids:
