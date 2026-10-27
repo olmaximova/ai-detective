@@ -1,4 +1,3 @@
-"""Лабораторная №6: модульные тесты без сетевых запросов к LLM."""
 from types import SimpleNamespace
 from unittest.mock import Mock
 
